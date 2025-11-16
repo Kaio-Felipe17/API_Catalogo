@@ -1,0 +1,5 @@
+appsettings.json
+launchSettings.json
+**/bin
+**/obj
+**/.vs
