@@ -19,24 +19,38 @@ public class ProdutosController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<Produto>> Get()
     {
-        var produtos = _context.Produtos
-            .AsNoTracking()
-            .Take(10)
-            .ToList();
+        try
+        {
+            var produtos = _context.Produtos
+                .AsNoTracking()
+                .Take(10)
+                .ToList();
 
-        if (produtos is null) return NotFound("Produtos não encontrados.");
-        return produtos;
+            if (produtos is null) return NotFound("Produtos não encontrados.");
+            return produtos;
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Erro ao tratar solicitação");
+        }
     }
 
     [HttpGet("{id:int}", Name = "ObterProduto")]
     public ActionResult<Produto> Get(int id)
     {
-        var produto = _context.Produtos
-            .AsNoTracking()
-            .FirstOrDefault(p => p.ProdutoId == id);
+        try
+        {
+            var produto = _context.Produtos
+                .AsNoTracking()
+                .FirstOrDefault(p => p.ProdutoId == id);
 
-        if (produto is null) return NotFound("Produto não encontrado.");
-        return produto;
+            if (produto is null) return NotFound("Produto não encontrado.");
+            return produto;
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Erro ao tratar solicitação");
+        }
     }
 
     [HttpPost]
@@ -61,7 +75,7 @@ public class ProdutosController : ControllerBase
     public ActionResult Delete(int id)
     {
         var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
-        if (produto is null) return NotFound("Produto não encontrado.");
+        if (produto is null) return NotFound($"Produto {id} não encontrado.");
         _context.Produtos.Remove(produto);
         _context.SaveChanges();
         return Ok(produto);
