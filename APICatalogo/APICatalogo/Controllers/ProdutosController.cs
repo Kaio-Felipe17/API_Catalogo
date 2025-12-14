@@ -19,38 +19,25 @@ public class ProdutosController : ControllerBase
     [HttpGet]
     public async Task <ActionResult<IEnumerable<Produto>>> GetAsync()
     {
-        try
-        {
-            var produtos = await _context.Produtos
-                .AsNoTracking()
-                .Take(10)
-                .ToListAsync();
+        var produtos = await _context.Produtos
+            .AsNoTracking()
+            .Take(10)
+            .ToListAsync();
 
-            if (produtos is null) return NotFound("Produtos não encontrados.");
-            return produtos;
-        }
-        catch (Exception)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, "Erro ao tratar solicitação");
-        }
+        if (produtos is null) return NotFound("Produtos não encontrados.");
+        return produtos;
+
     }
 
     [HttpGet("{id:int}", Name = "ObterProduto")]
     public async Task<ActionResult<Produto>> GetAsync(int id)
     {
-        try
-        {
-            var produto = await _context.Produtos
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.ProdutoId == id);
+        var produto = await _context.Produtos
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.ProdutoId == id);
 
-            if (produto is null) return NotFound("Produto não encontrado.");
-            return produto;
-        }
-        catch (Exception)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, "Erro ao tratar solicitação");
-        }
+        if (produto is null) return NotFound("Produto não encontrado.");
+        return produto;
     }
 
     [HttpPost]
