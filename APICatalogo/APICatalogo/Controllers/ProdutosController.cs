@@ -17,14 +17,14 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<Produto>> Get()
+    public async Task <ActionResult<IEnumerable<Produto>>> GetAsync()
     {
         try
         {
-            var produtos = _context.Produtos
+            var produtos = await _context.Produtos
                 .AsNoTracking()
                 .Take(10)
-                .ToList();
+                .ToListAsync();
 
             if (produtos is null) return NotFound("Produtos não encontrados.");
             return produtos;
@@ -36,13 +36,13 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpGet("{id:int}", Name = "ObterProduto")]
-    public ActionResult<Produto> Get(int id)
+    public async Task<ActionResult<Produto>> GetAsync(int id)
     {
         try
         {
-            var produto = _context.Produtos
+            var produto = await _context.Produtos
                 .AsNoTracking()
-                .FirstOrDefault(p => p.ProdutoId == id);
+                .FirstOrDefaultAsync(p => p.ProdutoId == id);
 
             if (produto is null) return NotFound("Produto não encontrado.");
             return produto;
@@ -54,30 +54,30 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult Post(Produto produto)
+    public async Task<ActionResult> PostAsync(Produto produto)
     {
         if (produto is null) return BadRequest(); 
-        _context.Produtos.Add(produto);
-        _context.SaveChanges();
+        await _context.Produtos.AddAsync(produto);
+        await _context.SaveChangesAsync();
         return new CreatedAtRouteResult("ObterProduto", new { id = produto.ProdutoId }, produto);
     }
 
     [HttpPut("{id:int}")]
-    public ActionResult Put(int id, Produto produto)
+    public async Task<ActionResult> PutAsync(int id, Produto produto)
     {
         if (id != produto.ProdutoId) return BadRequest();
         _context.Entry(produto).State = EntityState.Modified;
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return Ok(produto);
     }
 
     [HttpDelete("{id:int}")]
-    public ActionResult Delete(int id)
+    public async Task<ActionResult> DeleteAsync(int id)
     {
-        var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
+        var produto = await _context.Produtos.FirstOrDefaultAsync(p => p.ProdutoId == id);
         if (produto is null) return NotFound($"Produto {id} não encontrado.");
         _context.Produtos.Remove(produto);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return Ok(produto);
     }
 }
