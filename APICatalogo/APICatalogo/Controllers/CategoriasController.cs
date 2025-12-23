@@ -9,25 +9,25 @@ namespace APICatalogo.Controllers;
 [ApiController]
 public class CategoriasController : ControllerBase
 {
-    private readonly IRepository<Categoria> _repository;
+    private readonly IUnitOfWork _uof;
 
-    public CategoriasController(IRepository<Categoria> repository)
+    public CategoriasController(IUnitOfWork uof)
     {
-        _repository = repository;
+        _uof = uof;
     }
 
     [HttpGet]
     [ServiceFilter(typeof(ApiLoggingFilter))]
     public ActionResult<IEnumerable<Categoria>> GetAll()
     {
-        var categorias = _repository.GetAll();
+        var categorias = _uof.CategoriaRepository.GetAll();
         return Ok(categorias);
     }
 
     [HttpGet("{id:int}", Name = "ObterCategoria")]
     public ActionResult<Categoria> Get(int id)
     {
-        var categoria = _repository.Get(c => c.CategoriaId == id);
+        var categoria = _uof.CategoriaRepository.Get(c => c.CategoriaId == id);
         return Ok(categoria);
     }
 
@@ -35,7 +35,8 @@ public class CategoriasController : ControllerBase
     public ActionResult Post(Categoria categoria)
     {
         if (categoria is null) return BadRequest();
-        var categoriaCriada = _repository.Create(categoria);
+        var categoriaCriada = _uof.CategoriaRepository.Create(categoria);
+        _uof.Commit();
         return new CreatedAtRouteResult("ObterCategoria", new { id = categoriaCriada.CategoriaId }, categoria);
     }
 
@@ -43,15 +44,17 @@ public class CategoriasController : ControllerBase
     public ActionResult Put(int id, Categoria categoria)
     {
         if (id != categoria.CategoriaId) return BadRequest();
-        _repository.Update(categoria);
+        _uof.CategoriaRepository.Update(categoria);
+        _uof.Commit();
         return Ok(categoria);
     }
 
     [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
-        var categoria = _repository.Get(c => c.CategoriaId == id);
-        _repository.Delete(categoria);
+        var categoria = _uof.CategoriaRepository.Get(c => c.CategoriaId == id);
+        _uof.CategoriaRepository.Delete(categoria);
+        _uof.Commit();
         return Ok(categoria);
     }
 }
