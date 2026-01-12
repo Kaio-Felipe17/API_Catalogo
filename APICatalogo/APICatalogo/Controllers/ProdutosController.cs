@@ -2,6 +2,7 @@
 using APICatalogo.Models;
 using APICatalogo.Repositories;
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APICatalogo.Controllers;
@@ -22,10 +23,10 @@ public class ProdutosController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<ProdutoDTO>> GetProdutosCategoria(int id)
     {
-       var produtos = _uof.ProdutoRepository.GetProdutosPorCategoria(id);
-       if (produtos is null) return NotFound();
-       var produtosDto = _mapper.Map<ProdutoDTO>(produtos);
-       return Ok(produtosDto);
+        var produtos = _uof.ProdutoRepository.GetProdutosPorCategoria(id);
+        if (produtos is null) return NotFound();
+        var produtosDto = _mapper.Map<ProdutoDTO>(produtos);
+        return Ok(produtosDto);
     }
 
     [HttpGet]
@@ -53,7 +54,7 @@ public class ProdutosController : ControllerBase
         _uof.Commit();
 
         var novoProdutoDto = _mapper.Map<ProdutoDTO>(novoProduto);
-        return new CreatedAtRouteResult("ObterProduto", 
+        return new CreatedAtRouteResult("ObterProduto",
             new { id = novoProdutoDto.ProdutoId }, novoProdutoDto);
     }
 
@@ -79,5 +80,24 @@ public class ProdutosController : ControllerBase
 
         var produtoDeletadoDto = _mapper.Map<ProdutoDTO>(deletado);
         return Ok(produtoDeletadoDto);
+    }
+
+    [HttpPatch("{id}/UpdatePartial")]
+    public ActionResult<ProdutoDTOUpdateResponse> Patch(
+        int id,
+        JsonPatchDocument<ProdutoDTOUpdateRequest> patchProdutoDTO)
+    {
+        if (patchProdutoDTO is null || id <= 0) return BadRequest();
+
+        var produto = _uof.ProdutoRepository.Get(p => p.ProdutoId == id);
+        if (produto is null) return NotFound();
+
+        var produtoUpdateRequest = _mapper.Map<ProdutoDTOUpdateRequest>(produto);
+        patchProdutoDTO.ApplyTo(produtoUpdateRequest, ModelState);
+        if (!ModelState.IsValid || !TryValidateModel(produtoUpdateRequest)) return BadRequest(ModelState);
+        _mapper.Map(produtoUpdateRequest, produto);
+        _uof.ProdutoRepository.Update(produto);
+        _uof.Commit();
+        return Ok(_mapper.Map<ProdutoDTOUpdateResponse>(produto));
     }
 }
