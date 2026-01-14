@@ -1,5 +1,6 @@
 ﻿using APICatalogo.DTOs;
 using APICatalogo.Models;
+using APICatalogo.Pagination;
 using APICatalogo.Repositories;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
@@ -20,7 +21,7 @@ public class ProdutosController : ControllerBase
         _mapper = mapper;
     }
 
-    [HttpGet]
+    [HttpGet("categoria")]
     public ActionResult<IEnumerable<ProdutoDTO>> GetProdutosCategoria(int id)
     {
         var produtos = _uof.ProdutoRepository.GetProdutosPorCategoria(id);
@@ -29,8 +30,8 @@ public class ProdutosController : ControllerBase
         return Ok(produtosDto);
     }
 
-    [HttpGet]
-    public ActionResult<IEnumerable<ProdutoDTO>> Get()
+    [HttpGet()]
+    public ActionResult<IEnumerable<ProdutoDTO>> GetAll()
     {
         var produtos = _uof.ProdutoRepository.GetAll();
         var produtosDto = _mapper.Map<ProdutoDTO>(produtos);
@@ -99,5 +100,14 @@ public class ProdutosController : ControllerBase
         _uof.ProdutoRepository.Update(produto);
         _uof.Commit();
         return Ok(_mapper.Map<ProdutoDTOUpdateResponse>(produto));
+    }
+
+    [HttpGet("pagination")]
+    public ActionResult<IEnumerable<ProdutoDTO>> GetWithPagination(
+        [FromQuery] ProdutosParameters produtosParameters)
+    {
+        var produtos = _uof.ProdutoRepository.GetProdutos(produtosParameters);
+        var produtosDto = _mapper.Map<List<ProdutoDTO>>(produtos);
+        return Ok(produtosDto);
     }
 }
