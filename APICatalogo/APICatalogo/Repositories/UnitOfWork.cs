@@ -29,7 +29,7 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
-    public void Commit() => context.SaveChanges();
+    public async Task CommitAsync() => await context.SaveChangesAsync();
 
     public void Dispose() => context.Dispose();
 }
