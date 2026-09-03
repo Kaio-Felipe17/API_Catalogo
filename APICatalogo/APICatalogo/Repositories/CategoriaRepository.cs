@@ -1,6 +1,7 @@
 ﻿using APICatalogo.Context;
 using APICatalogo.Models;
 using APICatalogo.Pagination;
+using X.PagedList;
 
 namespace APICatalogo.Repositories;
 
@@ -10,27 +11,28 @@ public class CategoriaRepository : Repository<Categoria>, ICategoriaRepository
     {
     }
 
-    public async Task<PagedList<Categoria>> GetCategoriasAsync(CategoriasParameters categoriasParams)
+    public async Task<IPagedList<Categoria>> GetCategoriasAsync(CategoriasParameters categoriasParams)
     {
         var categorias = await GetAllAsync();
         var categoriasOrdenadas = categorias.OrderBy(c => c.CategoriaId).AsQueryable();
-
-        return PagedList<Categoria>.ToPagedList(
-            categoriasOrdenadas,
+        var categoriasPaginadas = await categoriasOrdenadas.ToPagedListAsync(
             categoriasParams.PageNumber,
             categoriasParams.PageSize);
+
+        return categoriasPaginadas;
     }
 
-    public async Task<PagedList<Categoria>> GetCategoriasFiltroNomeAsync(CategoriasFiltroNome categoriasParams)
+    public async Task<IPagedList<Categoria>> GetCategoriasFiltroNomeAsync(CategoriasFiltroNome categoriasParams)
     {
         var categorias = await GetAllAsync();
 
         if (!string.IsNullOrEmpty(categoriasParams.Nome))
             categorias = categorias.Where(c => c.Nome.Contains(categoriasParams.Nome));
 
-        return PagedList<Categoria>.ToPagedList(
-            categorias.AsQueryable(),
+        var categoriasFiltradas = await categorias.ToPagedListAsync(
             categoriasParams.PageNumber,
             categoriasParams.PageSize);
+
+        return categoriasFiltradas;
     }
 }
